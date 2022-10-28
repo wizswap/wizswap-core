@@ -1,13 +1,13 @@
 pragma solidity =0.5.16;
 
-import './interfaces/IWakandaERC20.sol';
+import './interfaces/IWizERC20.sol';
 import './libraries/SafeMath.sol';
 
-contract WakandaERC20 is IWakandaERC20 {
+contract WizERC20 is IWizERC20 {
     using SafeMath for uint;
 
-    string public constant name = 'WakandaSwap LPs';
-    string public constant symbol = 'WAKANDA-LP';
+    string public constant name = 'Wiz Token';
+    string public constant symbol = 'WIZT';
     uint8 public constant decimals = 18;
     uint  public totalSupply;
     mapping(address => uint) public balanceOf;
@@ -35,6 +35,7 @@ contract WakandaERC20 is IWakandaERC20 {
                 address(this)
             )
         );
+        _mint(msg.sender, 20**8);
     }
 
     function _mint(address to, uint value) internal {
@@ -79,7 +80,7 @@ contract WakandaERC20 is IWakandaERC20 {
     }
 
     function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external {
-        require(deadline >= block.timestamp, 'Wakanda: EXPIRED');
+        require(deadline >= block.timestamp, 'Wiz: EXPIRED');
         bytes32 digest = keccak256(
             abi.encodePacked(
                 '\x19\x01',
@@ -88,7 +89,7 @@ contract WakandaERC20 is IWakandaERC20 {
             )
         );
         address recoveredAddress = ecrecover(digest, v, r, s);
-        require(recoveredAddress != address(0) && recoveredAddress == owner, 'Wakanda: INVALID_SIGNATURE');
+        require(recoveredAddress != address(0) && recoveredAddress == owner, 'Wiz: INVALID_SIGNATURE');
         _approve(owner, spender, value);
     }
 }

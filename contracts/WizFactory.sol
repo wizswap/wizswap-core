@@ -1,10 +1,10 @@
 pragma solidity =0.5.16;
 
-import './interfaces/IWakandaFactory.sol';
-import './WakandaPair.sol';
+import './interfaces/IWizFactory.sol';
+import './WizPair.sol';
 
-contract WakandaFactory is IWakandaFactory {
-    bytes32 public constant INIT_CODE_PAIR_HASH = keccak256(abi.encodePacked(type(WakandaPair).creationCode));
+contract WizFactory is IWizFactory {
+    bytes32 public constant INIT_CODE_PAIR_HASH = keccak256(abi.encodePacked(type(WizPair).creationCode));
 
     address public feeTo;
     address public feeToSetter;
@@ -23,16 +23,16 @@ contract WakandaFactory is IWakandaFactory {
     }
 
     function createPair(address tokenA, address tokenB) external returns (address pair) {
-        require(tokenA != tokenB, 'Wakanda: IDENTICAL_ADDRESSES');
+        require(tokenA != tokenB, 'Wiz: IDENTICAL_ADDRESSES');
         (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
-        require(token0 != address(0), 'Wakanda: ZERO_ADDRESS');
-        require(getPair[token0][token1] == address(0), 'Wakanda: PAIR_EXISTS'); // single check is sufficient
-        bytes memory bytecode = type(WakandaPair).creationCode;
+        require(token0 != address(0), 'Wiz: ZERO_ADDRESS');
+        require(getPair[token0][token1] == address(0), 'Wiz: PAIR_EXISTS'); // single check is sufficient
+        bytes memory bytecode = type(WizPair).creationCode;
         bytes32 salt = keccak256(abi.encodePacked(token0, token1));
         assembly {
             pair := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
-        IWakandaPair(pair).initialize(token0, token1);
+        IWizPair(pair).initialize(token0, token1);
         getPair[token0][token1] = pair;
         getPair[token1][token0] = pair; // populate mapping in the reverse direction
         allPairs.push(pair);
@@ -40,12 +40,12 @@ contract WakandaFactory is IWakandaFactory {
     }
 
     function setFeeTo(address _feeTo) external {
-        require(msg.sender == feeToSetter, 'Wakanda: FORBIDDEN');
+        require(msg.sender == feeToSetter, 'Wiz: FORBIDDEN');
         feeTo = _feeTo;
     }
 
     function setFeeToSetter(address _feeToSetter) external {
-        require(msg.sender == feeToSetter, 'Wakanda: FORBIDDEN');
+        require(msg.sender == feeToSetter, 'Wiz: FORBIDDEN');
         feeToSetter = _feeToSetter;
     }
 }
