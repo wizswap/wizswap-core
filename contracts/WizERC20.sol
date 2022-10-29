@@ -35,7 +35,6 @@ contract WizERC20 is IWizERC20 {
                 address(this)
             )
         );
-        _mint(msg.sender, 20**8);
     }
 
     function _mint(address to, uint value) internal {
