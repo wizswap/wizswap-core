@@ -1,23 +1,3 @@
-// File: contracts/interfaces/IWizFactory.sol
-
-pragma solidity >=0.5.0;
-
-interface IWizFactory {
-    event PairCreated(address indexed token0, address indexed token1, address pair, uint);
-
-    function feeTo() external view returns (address);
-    function feeToSetter() external view returns (address);
-
-    function getPair(address tokenA, address tokenB) external view returns (address pair);
-    function allPairs(uint) external view returns (address pair);
-    function allPairsLength() external view returns (uint);
-
-    function createPair(address tokenA, address tokenB) external returns (address pair);
-
-    function setFeeTo(address) external;
-    function setFeeToSetter(address) external;
-}
-
 // File: contracts/interfaces/IWizPair.sol
 
 pragma solidity >=0.5.0;
@@ -283,6 +263,26 @@ interface IERC20 {
     function transferFrom(address from, address to, uint value) external returns (bool);
 }
 
+// File: contracts/interfaces/IWizFactory.sol
+
+pragma solidity >=0.5.0;
+
+interface IWizFactory {
+    event PairCreated(address indexed token0, address indexed token1, address pair, uint);
+
+    function feeTo() external view returns (address);
+    function feeToSetter() external view returns (address);
+
+    function getPair(address tokenA, address tokenB) external view returns (address pair);
+    function allPairs(uint) external view returns (address pair);
+    function allPairsLength() external view returns (uint);
+
+    function createPair(address tokenA, address tokenB) external returns (address pair);
+
+    function setFeeTo(address) external;
+    function setFeeToSetter(address) external;
+}
+
 // File: contracts/interfaces/IWizCallee.sol
 
 pragma solidity >=0.5.0;
@@ -490,57 +490,5 @@ contract WizPair is IWizPair, WizERC20 {
     // force reserves to match balances
     function sync() external lock {
         _update(IERC20(token0).balanceOf(address(this)), IERC20(token1).balanceOf(address(this)), reserve0, reserve1);
-    }
-}
-
-// File: contracts/WizFactory.sol
-
-pragma solidity =0.5.16;
-
-
-contract WizFactory is IWizFactory {
-    bytes32 public constant INIT_CODE_PAIR_HASH = keccak256(abi.encodePacked(type(WizPair).creationCode));
-
-    address public feeTo;
-    address public feeToSetter;
-
-    mapping(address => mapping(address => address)) public getPair;
-    address[] public allPairs;
-
-    event PairCreated(address indexed token0, address indexed token1, address pair, uint);
-
-    constructor(address _feeToSetter) public {
-        feeToSetter = _feeToSetter;
-    }
-
-    function allPairsLength() external view returns (uint) {
-        return allPairs.length;
-    }
-
-    function createPair(address tokenA, address tokenB) external returns (address pair) {
-        require(tokenA != tokenB, 'Wiz: IDENTICAL_ADDRESSES');
-        (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
-        require(token0 != address(0), 'Wiz: ZERO_ADDRESS');
-        require(getPair[token0][token1] == address(0), 'Wiz: PAIR_EXISTS'); // single check is sufficient
-        bytes memory bytecode = type(WizPair).creationCode;
-        bytes32 salt = keccak256(abi.encodePacked(token0, token1));
-        assembly {
-            pair := create2(0, add(bytecode, 32), mload(bytecode), salt)
-        }
-        IWizPair(pair).initialize(token0, token1);
-        getPair[token0][token1] = pair;
-        getPair[token1][token0] = pair; // populate mapping in the reverse direction
-        allPairs.push(pair);
-        emit PairCreated(token0, token1, pair, allPairs.length);
-    }
-
-    function setFeeTo(address _feeTo) external {
-        require(msg.sender == feeToSetter, 'Wiz: FORBIDDEN');
-        feeTo = _feeTo;
-    }
-
-    function setFeeToSetter(address _feeToSetter) external {
-        require(msg.sender == feeToSetter, 'Wiz: FORBIDDEN');
-        feeToSetter = _feeToSetter;
     }
 }
